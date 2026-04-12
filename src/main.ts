@@ -2,13 +2,17 @@ import { NestFactory, Reflector } from '@nestjs/core';
 import { ValidationPipe, ClassSerializerInterceptor, Logger } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
 import { AppModule } from './app.module';
+import { UsersService } from './users/users.service';
 import { GlobalExceptionFilter } from './common/filters/http-exception.filter';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  app.useStaticAssets(join(__dirname, '..', 'public'));
 
   const configService = app.get(ConfigService);
   const port = configService.get<number>('port') || 3000;
@@ -74,9 +78,14 @@ async function bootstrap() {
     },
   });
 
+  // Seed default admin
+  const usersService = app.get(UsersService);
+  await usersService.seedAdmin();
+  logger.log('Varsayılan admin kontrol edildi: admin@eticaret.com');
+
   await app.listen(port);
 
-  logger.log(`Uygulama çalışıyor: http://localhost:${port}/api/v1`);
+  logger.log(`Uygulama çalışıyor: http://localhost:${port}`);
   logger.log(`Swagger dokümantasyon: http://localhost:${port}/api/docs`);
 }
 

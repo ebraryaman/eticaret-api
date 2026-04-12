@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>E-Ticaret</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: Arial, sans-serif; background: #f0f2f5; color: #333; }
+
+    nav {
+      background: #1a1a2e;
+      color: #fff;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    nav .brand { font-weight: bold; font-size: 17px; margin-right: auto; }
+    nav .role-badge {
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      background: #16213e;
+    }
+    nav .role-badge.admin { background: #7f1c1c; }
+    nav button {
+      background: #16213e;
+      color: #eee;
+      border: 1px solid #0f3460;
+      padding: 7px 14px;
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+    nav button.active, nav button:hover { background: #0f3460; color: #fff; }
+    #logout-btn { background: #7f1c1c !important; border-color: #7f1c1c !important; }
+    #logout-btn:hover { background: #c0392b !important; }
+    #user-info { font-size: 12px; color: #aaa; }
+
+    .container { max-width: 1100px; margin: 24px auto; padding: 0 16px; }
+    .page { display: none; }
+    .page.active { display: block; }
+
+    .card {
+      background: #fff;
+      border-radius: 8px;
+      padding: 22px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+    .card h2 {
+      margin-bottom: 16px;
+      font-size: 17px;
+      border-bottom: 2px solid #0f3460;
+      padding-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    label { display: block; margin-bottom: 4px; font-size: 13px; font-weight: bold; }
+    input, textarea, select {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+    textarea { height: 75px; resize: vertical; }
+
+    .btn { padding: 8px 18px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: bold; }
+    .btn-primary { background: #0f3460; color: #fff; }
+    .btn-primary:hover { background: #16213e; }
+    .btn-danger { background: #c0392b; color: #fff; }
+    .btn-danger:hover { background: #e74c3c; }
+    .btn-success { background: #27ae60; color: #fff; }
+    .btn-success:hover { background: #2ecc71; }
+    .btn-warning { background: #e67e22; color: #fff; }
+    .btn-warning:hover { background: #f39c12; }
+    .btn-sm { padding: 4px 10px; font-size: 12px; }
+
+    .msg { padding: 10px 14px; border-radius: 4px; margin-bottom: 14px; font-size: 14px; display: none; }
+    .msg.success { background: #d4edda; color: #155724; display: block; }
+    .msg.error { background: #f8d7da; color: #721c24; display: block; }
+
+    /* product grid */
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+    }
+    .product-card {
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .product-card img { width: 100%; height: 155px; object-fit: cover; }
+    .product-card .no-img {
+      width: 100%; height: 155px;
+      background: #e8e8e8;
+      display: flex; align-items: center; justify-content: center;
+      color: #aaa; font-size: 13px;
+    }
+    .product-card .info { padding: 12px; flex: 1; }
+    .product-card .info h3 { font-size: 14px; margin-bottom: 6px; }
+    .product-card .info .price { font-size: 16px; font-weight: bold; color: #0f3460; margin-bottom: 6px; }
+    .product-card .info .stock { font-size: 12px; color: #888; margin-bottom: 6px; }
+    .product-card .info .desc { font-size: 12px; color: #666; }
+    .product-card .actions { padding: 10px 12px; display: flex; gap: 6px; align-items: center; border-top: 1px solid #f0f0f0; }
+    .product-card .actions input[type=number] { width: 55px; margin: 0; padding: 5px; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th { background: #1a1a2e; color: #fff; padding: 10px 12px; text-align: left; }
+    td { padding: 9px 12px; border-bottom: 1px solid #eee; vertical-align: middle; }
+    tr:hover td { background: #f9f9f9; }
+
+    .badge { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; }
+    .badge-green { background: #d4edda; color: #155724; }
+    .badge-red { background: #f8d7da; color: #721c24; }
+    .badge-blue { background: #cce5ff; color: #004085; }
+    .badge-orange { background: #ffe8cc; color: #7a3c00; }
+
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 640px) { .grid2 { grid-template-columns: 1fr; } }
+
+    .cart-total { font-size: 16px; font-weight: bold; text-align: right; padding: 12px 0 0; border-top: 2px solid #0f3460; margin-top: 10px; }
+
+    /* modal */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5); z-index: 1000;
+      align-items: center; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal { background: #fff; border-radius: 8px; padding: 24px; width: 430px; max-width: 95vw; }
+    .modal h3 { margin-bottom: 16px; font-size: 16px; border-bottom: 2px solid #0f3460; padding-bottom: 8px; }
+  </style>
+</head>
+<body>
+
+<nav id="main-nav" style="display:none">
+  <span class="brand">E-Ticaret</span>
+  <span id="user-info"></span>
+  <span id="role-badge" class="role-badge"></span>
+  <!-- Kullanici tabları -->
+  <button id="nav-shop" onclick="showPage('shop')">Urunler</button>
+  <button id="nav-cart" onclick="showPage('cart')">Sepet <span id="cart-count"></span></button>
+  <button id="nav-my-orders" onclick="showPage('my-orders')">Siparislerim</button>
+  <!-- Admin tabları -->
+  <button id="nav-admin-products" style="display:none" onclick="showPage('admin-products')">Urunler</button>
+  <button id="nav-admin-users" style="display:none" onclick="showPage('admin-users')">Kullanici Yonetimi</button>
+  <button id="nav-admin-orders" style="display:none" onclick="showPage('admin-orders')">Siparisler</button>
+  <!-- Ortak -->
+  <button id="nav-password" onclick="showPage('change-password')">Sifre Degistir</button>
+  <button id="logout-btn" onclick="logout()">Cikis</button>
+</nav>
+
+<div class="container">
+
+  <!-- AUTH -->
+  <div id="page-auth" class="page active">
+    <div style="max-width:400px;margin:60px auto">
+      <div class="card">
+        <h2>Giris Yap</h2>
+        <div id="auth-msg" class="msg"></div>
+        <label>E-posta</label>
+        <input type="email" id="login-email" placeholder="ornek@mail.com" />
+        <label>Sifre</label>
+        <input type="password" id="login-password" placeholder="Sifreniz" onkeydown="if(event.key==='Enter')login()" />
+        <button class="btn btn-primary" onclick="login()" style="width:100%;margin-bottom:10px">Giris Yap</button>
+        <button class="btn btn-success" onclick="toggleRegister()" style="width:100%">Kayit Ol</button>
+      </div>
+      <div class="card" id="register-form" style="display:none">
+        <h2>Kayit Ol</h2>
+        <div id="register-msg" class="msg"></div>
+        <label>Ad Soyad</label>
+        <input type="text" id="reg-name" placeholder="Ad Soyad" />
+        <label>E-posta</label>
+        <input type="email" id="reg-email" placeholder="ornek@mail.com" />
+        <label>Sifre</label>
+        <input type="password" id="reg-password" placeholder="En az 6 karakter" />
+        <button class="btn btn-success" onclick="register()" style="width:100%">Kayit Ol</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- USER: SHOP -->
+  <div id="page-shop" class="page">
+    <div class="card">
+      <h2>Urunler <button class="btn btn-primary btn-sm" onclick="loadShop()">Yenile</button></h2>
+      <div id="shop-msg" class="msg"></div>
+      <div id="shop-grid" class="product-grid">Yukleniyor...</div>
+    </div>
+  </div>
+
+  <!-- USER: CART -->
+  <div id="page-cart" class="page">
+    <div class="card">
+      <h2>Sepetim <button class="btn btn-primary btn-sm" onclick="loadCart()">Yenile</button></h2>
+      <div id="cart-msg" class="msg"></div>
+      <div id="cart-table">Yukleniyor...</div>
+    </div>
+    <div class="card">
+      <h2>Siparis Ver</h2>
+      <label>Teslimat Adresi</label>
+      <textarea id="order-address" placeholder="Teslimat adresi giriniz..."></textarea>
+      <button class="btn btn-success" onclick="createOrder()">Siparis Ver</button>
+    </div>
+  </div>
+
+  <!-- USER: MY ORDERS -->
+  <div id="page-my-orders" class="page">
+    <div class="card">
+      <h2>Siparislerim <button class="btn btn-primary btn-sm" onclick="loadMyOrders()">Yenile</button></h2>
+      <div id="my-orders-table">Yukleniyor...</div>
+    </div>
+  </div>
+
+  <!-- ADMIN: PRODUCTS -->
+  <div id="page-admin-products" class="page">
+    <div class="grid2">
+      <div class="card">
+        <h2>Yeni Urun Ekle</h2>
+        <div id="admin-product-msg" class="msg"></div>
+        <label>Urun Adi *</label>
+        <input type="text" id="p-name" placeholder="Urun adi" />
+        <label>Fiyat (TL) *</label>
+        <input type="number" id="p-price" placeholder="0.00" step="0.01" />
+        <label>Stok *</label>
+        <input type="number" id="p-stock" placeholder="0" />
+        <label>Aciklama</label>
+        <textarea id="p-desc" placeholder="Urun aciklamasi"></textarea>
+        <label>Resim URL</label>
+        <input type="text" id="p-image" placeholder="https://..." />
+        <button class="btn btn-primary" onclick="createProduct()">Urun Ekle</button>
+      </div>
+      <div class="card">
+        <h2>Urun Duzenle (ID ile)</h2>
+        <label>Urun ID *</label>
+        <input type="number" id="u-id" placeholder="Urun ID" />
+        <label>Urun Adi</label>
+        <input type="text" id="u-name" placeholder="Yeni ad" />
+        <label>Fiyat (TL)</label>
+        <input type="number" id="u-price" placeholder="Yeni fiyat" step="0.01" />
+        <label>Stok</label>
+        <input type="number" id="u-stock" placeholder="Yeni stok" />
+        <label>Aciklama</label>
+        <textarea id="u-desc" placeholder="Yeni aciklama"></textarea>
+        <label>Resim URL</label>
+        <input type="text" id="u-image" placeholder="https://..." />
+        <button class="btn btn-warning" onclick="updateProduct()">Guncelle</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Urun Listesi <button class="btn btn-primary btn-sm" onclick="loadAdminProducts()">Yenile</button></h2>
+      <div id="admin-products-table">Yukleniyor...</div>
+    </div>
+  </div>
+
+  <!-- ADMIN: USER MANAGEMENT -->
+  <div id="page-admin-users" class="page">
+    <div class="grid2">
+      <div class="card">
+        <h2>Yeni Admin Ekle</h2>
+        <div id="admin-user-msg" class="msg"></div>
+        <label>Ad Soyad</label>
+        <input type="text" id="new-admin-name" placeholder="Ad Soyad" />
+        <label>E-posta</label>
+        <input type="email" id="new-admin-email" placeholder="admin@ornek.com" />
+        <label>Sifre</label>
+        <input type="password" id="new-admin-password" placeholder="En az 6 karakter" />
+        <button class="btn btn-danger" onclick="createAdminUser()">Admin Olustur</button>
+      </div>
+      <div class="card">
+        <h2>Admin Listesi <button class="btn btn-primary btn-sm" onclick="loadAdmins()">Yenile</button></h2>
+        <div id="admin-list-table">Yukleniyor...</div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Kullanici Listesi <button class="btn btn-primary btn-sm" onclick="loadUsers()">Yenile</button></h2>
+      <div id="users-list-table">Yukleniyor...</div>
+    </div>
+  </div>
+
+  <!-- ADMIN: ORDERS -->
+  <div id="page-admin-orders" class="page">
+    <div class="card">
+      <h2>Tum Siparisler <button class="btn btn-primary btn-sm" onclick="loadAdminOrders()">Yenile</button></h2>
+      <div id="admin-orders-table">Yukleniyor...</div>
+    </div>
+  </div>
+
+  <!-- ORTAK: SIFRE DEGISTIR -->
+  <div id="page-change-password" class="page">
+    <div style="max-width:420px;margin:0 auto">
+      <div class="card">
+        <h2>Sifre Degistir</h2>
+        <div id="pw-msg" class="msg"></div>
+        <label>Mevcut Sifre</label>
+        <input type="password" id="pw-current" placeholder="Mevcut sifreniz" />
+        <label>Yeni Sifre</label>
+        <input type="password" id="pw-new" placeholder="Yeni sifre (en az 6 karakter)" />
+        <label>Yeni Sifre Tekrar</label>
+        <input type="password" id="pw-confirm" placeholder="Yeni sifreyi tekrar girin" />
+        <button class="btn btn-primary" onclick="changePassword()">Sifre Degistir</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- PRODUCT EDIT MODAL -->
+<div class="modal-overlay" id="update-modal">
+  <div class="modal">
+    <h3>Urunu Duzenle</h3>
+    <input type="hidden" id="modal-id" />
+    <label>Urun Adi</label>
+    <input type="text" id="modal-name" />
+    <label>Fiyat (TL)</label>
+    <input type="number" id="modal-price" step="0.01" />
+    <label>Stok</label>
+    <input type="number" id="modal-stock" />
+    <label>Aciklama</label>
+    <textarea id="modal-desc"></textarea>
+    <label>Resim URL</label>
+    <input type="text" id="modal-image" />
+    <div style="display:flex;gap:10px;margin-top:4px">
+      <button class="btn btn-warning" onclick="submitModalUpdate()">Kaydet</button>
+      <button class="btn btn-primary" onclick="closeModal()">Iptal</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const BASE = 'http://localhost:3000/api/v1';
+  let token = localStorage.getItem('token') || null;
+  let currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+
+  function getHeaders() {
+    return {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {})
+    };
+  }
+
+  async function api(method, path, body) {
+    try {
+      const res = await fetch(BASE + path, {
+        method,
+        headers: getHeaders(),
+        body: body ? JSON.stringify(body) : undefined
+      });
+      const data = await res.json().catch(() => ({}));
+      return { ok: res.ok, status: res.status, data };
+    } catch {
+      return { ok: false, status: 0, data: { message: 'Sunucuya baglanilamadi.' } };
+    }
+  }
+
+  function showMsg(id, text, type) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.className = 'msg ' + type;
+    el.textContent = text;
+    setTimeout(() => { el.className = 'msg'; }, 4000);
+  }
+
+  function isAdmin() {
+    return currentUser && currentUser.role === 'admin';
+  }
+
+  function showPage(name) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('nav button[id^="nav-"]').forEach(b => b.classList.remove('active'));
+    document.getElementById('page-' + name).classList.add('active');
+    const nb = document.getElementById('nav-' + name);
+    if (nb) nb.classList.add('active');
+
+    if (name === 'shop') loadShop();
+    if (name === 'cart') loadCart();
+    if (name === 'my-orders') loadMyOrders();
+    if (name === 'admin-products') loadAdminProducts();
+    if (name === 'admin-users') { loadAdmins(); loadUsers(); }
+    if (name === 'admin-orders') loadAdminOrders();
+  }
+
+  function toggleRegister() {
+    const f = document.getElementById('register-form');
+    f.style.display = f.style.display === 'none' ? 'block' : 'none';
+  }
+
+  function saveSession(data) {
+    token = data.accessToken;
+    currentUser = data.user;
+    localStorage.setItem('token', token);
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+  }
+
+  async function login() {
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    if (!email || !password) return showMsg('auth-msg', 'E-posta ve sifre gerekli.', 'error');
+    const { ok, data } = await api('POST', '/auth/login', { email, password });
+    if (ok) { saveSession(data); initApp(); }
+    else showMsg('auth-msg', data.message || 'Giris basarisiz.', 'error');
+  }
+
+  async function register() {
+    const name = document.getElementById('reg-name').value.trim();
+    const email = document.getElementById('reg-email').value.trim();
+    const password = document.getElementById('reg-password').value;
+    if (!name || !email || !password) return showMsg('register-msg', 'Tum alanlari doldurun.', 'error');
+    const { ok, data } = await api('POST', '/auth/register', { name, email, password });
+    if (ok) { saveSession(data); initApp(); }
+    else showMsg('register-msg', data.message || 'Kayit basarisiz.', 'error');
+  }
+
+  function logout() {
+    token = null; currentUser = null;
+    localStorage.removeItem('token');
+    localStorage.removeItem('currentUser');
+    document.getElementById('main-nav').style.display = 'none';
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-auth').classList.add('active');
+  }
+
+  function initApp() {
+    document.getElementById('main-nav').style.display = 'flex';
+    document.getElementById('user-info').textContent = currentUser.name;
+    const badge = document.getElementById('role-badge');
+    if (isAdmin()) {
+      badge.textContent = 'Admin';
+      badge.className = 'role-badge admin';
+      document.getElementById('nav-admin-products').style.display = '';
+      document.getElementById('nav-admin-users').style.display = '';
+      document.getElementById('nav-admin-orders').style.display = '';
+      document.getElementById('nav-shop').style.display = 'none';
+      document.getElementById('nav-cart').style.display = 'none';
+      document.getElementById('nav-my-orders').style.display = 'none';
+      showPage('admin-products');
+    } else {
+      badge.textContent = 'Kullanici';
+      badge.className = 'role-badge';
+      document.getElementById('nav-admin-products').style.display = 'none';
+      document.getElementById('nav-admin-users').style.display = 'none';
+      document.getElementById('nav-admin-orders').style.display = 'none';
+      document.getElementById('nav-shop').style.display = '';
+      document.getElementById('nav-cart').style.display = '';
+      document.getElementById('nav-my-orders').style.display = '';
+      showPage('shop');
+    }
+  }
+
+  // ── USER: SHOP ───────────────────────────────────────────────────
+  async function loadShop() {
+    const { ok, data } = await api('GET', '/products');
+    const el = document.getElementById('shop-grid');
+    if (!ok || !Array.isArray(data) || data.length === 0) {
+      el.innerHTML = '<p style="color:#888;grid-column:1/-1">Hic urun bulunamadi.</p>';
+      return;
+    }
+    el.innerHTML = data.map(p => `
+      <div class="product-card">
+        ${p.imageUrl
+          ? `<img src="${p.imageUrl}" alt="${p.name}" onerror="this.style.display='none';this.nextSibling.style.display='flex'">`
+          : ''}
+        <div class="no-img" style="${p.imageUrl ? 'display:none' : ''}">Resim Yok</div>
+        <div class="info">
+          <h3>${p.name}</h3>
+          <div class="price">${Number(p.price).toFixed(2)} TL</div>
+          ${p.description ? `<div class="desc">${p.description}</div>` : ''}
+          <div class="stock">Stok: ${p.stockQuantity ?? 0}</div>
+        </div>
+        <div class="actions">
+          <input type="number" min="1" max="${p.stockQuantity ?? 99}" value="1" id="qty-${p.id}" />
+          <button class="btn btn-success btn-sm" onclick="addToCart(${p.id})">Sepete Ekle</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // ── USER: CART ──────────────────────────────────────────────────
+  async function loadCart() {
+    const { ok, data } = await api('GET', '/cart');
+    const el = document.getElementById('cart-table');
+    updateCartCount(data);
+    if (!ok || !data.cart || !data.cart.items || data.cart.items.length === 0) {
+      el.innerHTML = '<p style="color:#888;padding:10px">Sepetiniz bos.</p>';
+      return;
+    }
+    el.innerHTML = `
+      <table>
+        <thead><tr><th>Urun</th><th>Birim Fiyat</th><th>Adet</th><th>Ara Toplam</th><th></th></tr></thead>
+        <tbody>${data.cart.items.map(item => `
+          <tr>
+            <td>${item.product.name}</td>
+            <td>${Number(item.product.price).toFixed(2)} TL</td>
+            <td><input type="number" min="1" value="${item.quantity}" style="width:60px" onchange="updateCartItem(${item.id},this.value)" /></td>
+            <td><strong>${(item.product.price * item.quantity).toFixed(2)} TL</strong></td>
+            <td><button class="btn btn-danger btn-sm" onclick="removeCartItem(${item.id})">Kaldir</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      <div class="cart-total">Toplam: <strong>${Number(data.totalAmount).toFixed(2)} TL</strong> (${data.totalItems} urun)</div>`;
+  }
+
+  function updateCartCount(data) {
+    const el = document.getElementById('cart-count');
+    el.textContent = (data && data.totalItems > 0) ? `(${data.totalItems})` : '';
+  }
+
+  async function addToCart(productId) {
+    const qtyEl = document.getElementById('qty-' + productId);
+    const quantity = parseInt(qtyEl ? qtyEl.value : 1) || 1;
+    const { ok, data } = await api('POST', '/cart/items', { productId, quantity });
+    if (ok) {
+      showMsg('shop-msg', 'Urun sepete eklendi!', 'success');
+      const r = await api('GET', '/cart');
+      if (r.ok) updateCartCount(r.data);
+    } else {
+      showMsg('shop-msg', data.message || 'Hata olustu.', 'error');
+    }
+  }
+
+  async function updateCartItem(itemId, quantity) {
+    await api('PUT', '/cart/items/' + itemId, { quantity: parseInt(quantity) });
+    loadCart();
+  }
+
+  async function removeCartItem(itemId) {
+    await api('DELETE', '/cart/items/' + itemId);
+    loadCart();
+  }
+
+  async function createOrder() {
+    const shippingAddress = document.getElementById('order-address').value.trim();
+    if (!shippingAddress) return alert('Lutfen teslimat adresi giriniz.');
+    const { ok, data } = await api('POST', '/orders', { shippingAddress });
+    if (ok) {
+      document.getElementById('order-address').value = '';
+      showPage('my-orders');
+    } else {
+      alert(data.message || 'Siparis olusturulamadi. Sepetiniz bos olabilir.');
+    }
+  }
+
+  // ── USER: MY ORDERS ─────────────────────────────────────────────
+  async function loadMyOrders() {
+    const { ok, data } = await api('GET', '/orders');
+    const el = document.getElementById('my-orders-table');
+    if (!ok || !Array.isArray(data) || data.length === 0) {
+      el.innerHTML = '<p style="color:#888;padding:10px">Hic siparisim yok.</p>';
+      return;
+    }
+    el.innerHTML = `<table>
+      <thead><tr><th>ID</th><th>Tarih</th><th>Tutar</th><th>Durum</th><th>Adres</th></tr></thead>
+      <tbody>${data.map(o => `
+        <tr>
+          <td>#${o.id}</td>
+          <td>${new Date(o.createdAt).toLocaleDateString('tr-TR')}</td>
+          <td><strong>${Number(o.totalAmount).toFixed(2)} TL</strong></td>
+          <td><span class="badge badge-blue">${o.status}</span></td>
+          <td>${o.shippingAddress || '-'}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+  }
+
+  // ── ADMIN: PRODUCTS ─────────────────────────────────────────────
+  async function loadAdminProducts() {
+    const { ok, data } = await api('GET', '/products');
+    const el = document.getElementById('admin-products-table');
+    if (!ok || !Array.isArray(data) || data.length === 0) {
+      el.innerHTML = '<p style="color:#888;padding:10px">Hic urun yok.</p>';
+      return;
+    }
+    el.innerHTML = `<table>
+      <thead><tr><th>ID</th><th>Ad</th><th>Fiyat</th><th>Stok</th><th>Durum</th><th>Islemler</th></tr></thead>
+      <tbody>${data.map(p => `
+        <tr>
+          <td>${p.id}</td>
+          <td>${p.name}</td>
+          <td>${Number(p.price).toFixed(2)} TL</td>
+          <td>${p.stockQuantity ?? 0}</td>
+          <td><span class="badge ${p.isActive ? 'badge-green' : 'badge-red'}">${p.isActive ? 'Aktif' : 'Pasif'}</span></td>
+          <td style="display:flex;gap:6px">
+            <button class="btn btn-warning btn-sm" onclick='openModal(${JSON.stringify(p)})'>Duzenle</button>
+            <button class="btn btn-danger btn-sm" onclick="deleteProduct(${p.id})">Sil</button>
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+  }
+
+  async function createProduct() {
+    const name = document.getElementById('p-name').value.trim();
+    const price = parseFloat(document.getElementById('p-price').value);
+    const stockQuantity = parseInt(document.getElementById('p-stock').value);
+    const description = document.getElementById('p-desc').value.trim();
+    const imageUrl = document.getElementById('p-image').value.trim();
+    if (!name || isNaN(price) || isNaN(stockQuantity)) return showMsg('admin-product-msg', 'Ad, fiyat ve stok zorunludur.', 'error');
+    const body = { name, price, stockQuantity, description };
+    if (imageUrl) body.imageUrl = imageUrl;
+    const { ok, data } = await api('POST', '/products', body);
+    if (ok) {
+      showMsg('admin-product-msg', 'Urun eklendi!', 'success');
+      ['p-name','p-price','p-stock','p-desc','p-image'].forEach(id => document.getElementById(id).value = '');
+      loadAdminProducts();
+    } else {
+      const msg = Array.isArray(data.message) ? data.message.join(', ') : (data.message || 'Hata.');
+      showMsg('admin-product-msg', msg, 'error');
+    }
+  }
+
+  async function updateProduct() {
+    const id = document.getElementById('u-id').value;
+    if (!id) return showMsg('admin-product-msg', 'Urun ID gerekli.', 'error');
+    const body = {};
+    const name = document.getElementById('u-name').value.trim();
+    const price = document.getElementById('u-price').value;
+    const stock = document.getElementById('u-stock').value;
+    const desc = document.getElementById('u-desc').value.trim();
+    const img = document.getElementById('u-image').value.trim();
+    if (name) body.name = name;
+    if (price) body.price = parseFloat(price);
+    if (stock !== '') body.stockQuantity = parseInt(stock);
+    if (desc) body.description = desc;
+    if (img) body.imageUrl = img;
+    const { ok, data } = await api('PUT', '/products/' + id, body);
+    if (ok) { showMsg('admin-product-msg', 'Guncellendi!', 'success'); loadAdminProducts(); }
+    else showMsg('admin-product-msg', data.message || 'Hata.', 'error');
+  }
+
+  async function deleteProduct(id) {
+    if (!confirm('Bu urunu silmek istediginizden emin misiniz?')) return;
+    const { ok } = await api('DELETE', '/products/' + id);
+    if (ok) loadAdminProducts();
+    else showMsg('admin-product-msg', 'Silme basarisiz.', 'error');
+  }
+
+  function openModal(p) {
+    document.getElementById('modal-id').value = p.id;
+    document.getElementById('modal-name').value = p.name;
+    document.getElementById('modal-price').value = p.price;
+    document.getElementById('modal-stock').value = p.stockQuantity ?? 0;
+    document.getElementById('modal-desc').value = p.description || '';
+    document.getElementById('modal-image').value = p.imageUrl || '';
+    document.getElementById('update-modal').classList.add('open');
+  }
+
+  function closeModal() {
+    document.getElementById('update-modal').classList.remove('open');
+  }
+
+  async function submitModalUpdate() {
+    const id = document.getElementById('modal-id').value;
+    const body = {
+      name: document.getElementById('modal-name').value.trim(),
+      price: parseFloat(document.getElementById('modal-price').value),
+      stockQuantity: parseInt(document.getElementById('modal-stock').value),
+      description: document.getElementById('modal-desc').value.trim(),
+    };
+    const img = document.getElementById('modal-image').value.trim();
+    if (img) body.imageUrl = img;
+    const { ok, data } = await api('PUT', '/products/' + id, body);
+    if (ok) { closeModal(); loadAdminProducts(); }
+    else alert(data.message || 'Guncelleme basarisiz.');
+  }
+
+  // ── ADMIN: USER MANAGEMENT ───────────────────────────────────────
+  async function createAdminUser() {
+    const name = document.getElementById('new-admin-name').value.trim();
+    const email = document.getElementById('new-admin-email').value.trim();
+    const password = document.getElementById('new-admin-password').value;
+    if (!name || !email || !password) return showMsg('admin-user-msg', 'Tum alanlari doldurun.', 'error');
+    const { ok, data } = await api('POST', '/auth/admin/create', { name, email, password });
+    if (ok) {
+      showMsg('admin-user-msg', 'Admin olusturuldu!', 'success');
+      document.getElementById('new-admin-name').value = '';
+      document.getElementById('new-admin-email').value = '';
+      document.getElementById('new-admin-password').value = '';
+      loadAdmins();
+    } else {
+      showMsg('admin-user-msg', data.message || 'Hata.', 'error');
+    }
+  }
+
+  async function loadAdmins() {
+    const { ok, data } = await api('GET', '/auth/admin/list');
+    const el = document.getElementById('admin-list-table');
+    if (!ok || !Array.isArray(data) || data.length === 0) {
+      el.innerHTML = '<p style="color:#888;padding:8px">Hic admin yok.</p>';
+      return;
+    }
+    el.innerHTML = `<table>
+      <thead><tr><th>Ad</th><th>E-posta</th><th></th></tr></thead>
+      <tbody>${data.map(u => `
+        <tr>
+          <td>${u.name}</td>
+          <td>${u.email}</td>
+          <td>${u.id !== currentUser.id ? `<button class="btn btn-danger btn-sm" onclick="deleteUser(${u.id})">Sil</button>` : '<span style="color:#aaa;font-size:12px">Sen</span>'}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+  }
+
+  async function loadUsers() {
+    const { ok, data } = await api('GET', '/auth/users/list');
+    const el = document.getElementById('users-list-table');
+    if (!ok || !Array.isArray(data) || data.length === 0) {
+      el.innerHTML = '<p style="color:#888;padding:10px">Hic kullanici yok.</p>';
+      return;
+    }
+    el.innerHTML = `<table>
+      <thead><tr><th>ID</th><th>Ad</th><th>E-posta</th><th>Kayit Tarihi</th><th></th></tr></thead>
+      <tbody>${data.map(u => `
+        <tr>
+          <td>${u.id}</td>
+          <td>${u.name}</td>
+          <td>${u.email}</td>
+          <td>${new Date(u.createdAt).toLocaleDateString('tr-TR')}</td>
+          <td><button class="btn btn-danger btn-sm" onclick="deleteUser(${u.id})">Sil</button></td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+  }
+
+  async function deleteUser(id) {
+    if (!confirm('Bu kullanici silinecek. Emin misiniz?')) return;
+    const { ok } = await api('DELETE', '/auth/users/' + id);
+    if (ok) { loadAdmins(); loadUsers(); }
+    else showMsg('admin-user-msg', 'Silme basarisiz.', 'error');
+  }
+
+  // ── ADMIN: ORDERS ────────────────────────────────────────────────
+  async function loadAdminOrders() {
+    const { ok, data } = await api('GET', '/orders/all');
+    const el = document.getElementById('admin-orders-table');
+    if (!ok || !Array.isArray(data) || data.length === 0) {
+      el.innerHTML = '<p style="color:#888;padding:10px">Siparis bulunamadi.</p>';
+      return;
+    }
+    el.innerHTML = `<table>
+      <thead><tr><th>ID</th><th>Kullanici</th><th>Tarih</th><th>Tutar</th><th>Urunler</th><th>Durum</th><th>Adres</th></tr></thead>
+      <tbody>${data.map(o => `
+        <tr>
+          <td>#${o.id}</td>
+          <td>${o.user ? o.user.name : '-'}<br><small style="color:#888">${o.user ? o.user.email : ''}</small></td>
+          <td>${new Date(o.createdAt).toLocaleDateString('tr-TR')}</td>
+          <td><strong>${Number(o.totalAmount).toFixed(2)} TL</strong></td>
+          <td style="font-size:12px">${(o.items || []).map(i => `${i.product?.name || 'Urun'} x${i.quantity}`).join('<br>') || '-'}</td>
+          <td><span class="badge badge-blue">${o.status}</span></td>
+          <td>${o.shippingAddress || '-'}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+  }
+
+  // ── SIFRE DEGISTIR ───────────────────────────────────────────────
+  async function changePassword() {
+    const currentPassword = document.getElementById('pw-current').value;
+    const newPassword = document.getElementById('pw-new').value;
+    const confirm = document.getElementById('pw-confirm').value;
+    if (!currentPassword || !newPassword || !confirm) return showMsg('pw-msg', 'Tum alanlari doldurun.', 'error');
+    if (newPassword !== confirm) return showMsg('pw-msg', 'Yeni sifreler uyusmuyor.', 'error');
+    if (newPassword.length < 6) return showMsg('pw-msg', 'Yeni sifre en az 6 karakter olmali.', 'error');
+    const { ok, data } = await api('POST', '/auth/change-password', { currentPassword, newPassword });
+    if (ok) {
+      showMsg('pw-msg', 'Sifre basariyla degistirildi!', 'success');
+      document.getElementById('pw-current').value = '';
+      document.getElementById('pw-new').value = '';
+      document.getElementById('pw-confirm').value = '';
+    } else {
+      showMsg('pw-msg', data.message || 'Hata olustu.', 'error');
+    }
+  }
+
+  // modal overlay click
+  document.getElementById('update-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+
+  // init
+  if (token && currentUser) initApp();
+</script>
+</body>
+</html>

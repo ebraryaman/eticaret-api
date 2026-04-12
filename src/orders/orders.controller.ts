@@ -20,8 +20,10 @@ import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { Order } from './entities/order.entity';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { User } from '../users/entities/user.entity';
+import { User, UserRole } from '../users/entities/user.entity';
 
 @ApiTags('Orders')
 @Controller('orders')
@@ -50,16 +52,21 @@ export class OrdersController {
     return this.ordersService.createFromCart(user.id, createOrderDto);
   }
 
+  @Get('all')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN)
+  @ApiOperation({ summary: 'Tüm siparişleri listele (sadece admin)' })
+  @ApiResponse({ status: 200, type: [Order] })
+  findAllAdmin() {
+    return this.ordersService.findAll();
+  }
+
   @Get()
   @ApiOperation({
     summary: 'Siparişleri listele',
     description: 'Giriş yapmış kullanıcının tüm siparişlerini listeler',
   })
-  @ApiResponse({
-    status: 200,
-    description: 'Sipariş listesi başarıyla getirildi',
-    type: [Order],
-  })
+  @ApiResponse({ status: 200, type: [Order] })
   @ApiResponse({ status: 401, description: 'Yetkisiz erişim' })
   findAll(@CurrentUser() user: User) {
     return this.ordersService.findAllByUser(user.id);

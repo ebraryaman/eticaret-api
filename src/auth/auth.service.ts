@@ -46,8 +46,29 @@ export class AuthService {
     return this.usersService.findByIdOrFail(userId);
   }
 
+  async changePassword(userId: number, currentPassword: string, newPassword: string): Promise<void> {
+    await this.usersService.changePassword(userId, currentPassword, newPassword);
+  }
+
+  async createAdmin(dto: { name: string; email: string; password: string }): Promise<AuthResponse> {
+    const user = await this.usersService.createAdmin(dto);
+    return this.generateAuthResponse(user);
+  }
+
+  async getAllAdmins() {
+    return this.usersService.findAllAdmins();
+  }
+
+  async getAllUsers() {
+    return this.usersService.findAllUsers();
+  }
+
+  async deleteUser(id: number): Promise<void> {
+    return this.usersService.deleteUser(id);
+  }
+
   private generateAuthResponse(user: User): AuthResponse {
-    const payload = { sub: user.id, email: user.email };
+    const payload = { sub: user.id, email: user.email, role: user.role };
     const accessToken = this.jwtService.sign(payload);
 
     const { password, ...userWithoutPassword } = user;

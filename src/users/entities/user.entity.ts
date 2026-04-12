@@ -12,6 +12,11 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Cart } from '../../cart/entities/cart.entity';
 import { Order } from '../../orders/entities/order.entity';
 
+export enum UserRole {
+  USER = 'user',
+  ADMIN = 'admin',
+}
+
 @Entity('users')
 export class User {
   @ApiProperty({ example: 1 })
@@ -29,6 +34,10 @@ export class User {
   @Exclude()
   @Column()
   password: string;
+
+  @ApiProperty({ example: 'user', enum: UserRole })
+  @Column({ type: 'enum', enum: UserRole, default: UserRole.USER })
+  role: UserRole;
 
   @ApiProperty({ example: '2024-01-01T00:00:00.000Z' })
   @CreateDateColumn({ name: 'created_at' })
