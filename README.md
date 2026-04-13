@@ -243,7 +243,7 @@ JWT token'ı nasıl doğrulayacağını tanımlar. Her korumalı endpoint'e iste
 
 ### `src/auth/guards/roles.guard.ts`
 
-`@UseGuards(RolesGuard)` + `@Roles(UserRole.ADMIN)` kombinasyonu ile çalışır. Kullanıcının rolünü kontrol eder. Admin gerektiren endpoint'lere normal kullanıcı erişmeye çalışırsa `ForbiddenException` fırlatır.
+`@UseGuards(RolesGuard)` + `@Roles(UserRole.ADMIN)` kombinasyonu ile çalışır. Kullanıcının rolünü kontrol eder. Admin gerektiren endpoint'lere normal kullanıcı erişmeye çalışırsa `ForbiddenException` oluşturur.
 
 `Reflector` kullanır: `@Roles()` decorator'ıyla endpoint'e eklenen metadata'yı okur.
 
@@ -316,7 +316,7 @@ Veritabanı işlemlerini yapar. Auth servisi tarafından kullanılır.
 | `changePassword()` | Mevcut şifreyi doğrular, yeni şifreyi hashler ve kaydeder |
 | `findByEmail()` | Email ile kullanıcı bulur (login için) |
 | `findById()` | ID ile kullanıcı bulur, bulamazsa null döner |
-| `findByIdOrFail()` | ID ile kullanıcı bulur, bulamazsa NotFoundException fırlatır |
+| `findByIdOrFail()` | ID ile kullanıcı bulur, bulamazsa NotFoundException oluşturur |
 
 ---
 
@@ -362,7 +362,7 @@ Veritabanındaki `products` tablosunu temsil eder.
 | `create()` | Yeni ürün oluşturur |
 | `update()` | Ürünü günceller (`Object.assign` ile kısmi güncelleme) |
 | `remove()` | Ürünü gerçekten silmez, `isActive=false` yapar (soft delete) |
-| `decreaseStock()` | Sipariş verilince stok düşürür, yetersiz stokta hata fırlatır |
+| `decreaseStock()` | Sipariş verilince stok düşürür, yetersiz stokta hata gönderir. |
 
 ---
 
