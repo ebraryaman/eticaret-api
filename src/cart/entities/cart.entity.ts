@@ -25,7 +25,7 @@ export class Cart {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
-  @OneToOne(() => User, (user) => user.cart)
+  @OneToOne(() => User, (user) => user.cart, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;
 
